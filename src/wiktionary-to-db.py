@@ -16,7 +16,6 @@ def main():
     OUT_SUBDIR = 'wiktionary-to-db'
     REPORT_DIR = f'{OUT_SUBDIR}/report'
     SHOULD_CLEAR_REPORT_FILES = True
-    SHOULD_WRITE_REPORT_FILES = True
     MEDIAWIKI_PAGE_DIR = f'{OUT_SUBDIR}/mediawiki'
     SHOULD_CLEAR_MEDIAWIKI_PAGES = True
     SHOULD_WRITE_MEDIAWIKI_PAGES = True
@@ -28,7 +27,6 @@ def main():
     SHOULD_WRITE_HTML_PAGES = True #
     FAILED_PAGE_DIR = f'{OUT_SUBDIR}/failed-pages'
     SHOULD_CLEAR_FAILED_PAGES = True
-    SHOULD_WRITE_FAILED_PAGES = True
     SHOULD_CLEAR_WORDS_IN_DB = False #
     SHOULD_INSERT_WORDS_TO_DB = False #
     # NUM_PAGES_TO_SKIP = 403071
@@ -46,11 +44,11 @@ def main():
         initDir(REPORT_DIR)
     if SHOULD_CLEAR_MEDIAWIKI_PAGES:
         initDir(MEDIAWIKI_PAGE_DIR)
-    if SHOULD_WRITE_NONSMELL_PAGES:
+    if SHOULD_CLEAR_NONSMELL_PAGES:
         initDir(NONSMELL_PAGE_DIR)
-    if SHOULD_WRITE_HTML_PAGES:
+    if SHOULD_CLEAR_HTML_PAGES:
         initDir(HTML_PAGE_DIR)
-    if SHOULD_WRITE_FAILED_PAGES:
+    if SHOULD_CLEAR_FAILED_PAGES:
         initDir(FAILED_PAGE_DIR)
 
     wikiDump = mwxml.Dump.from_file(open(DUMP_PATH, encoding='utf-8'))
@@ -82,8 +80,8 @@ def main():
                 writeFile(NONSMELL_PAGE_DIR, pageFileName + '.txt', text or '', shouldPrint=False)
             continue
 
-        # TODO probably remove
-        writeFile(MEDIAWIKI_PAGE_DIR, pageFileName + '.txt', text or '', shouldPrint=False)
+        if SHOULD_WRITE_MEDIAWIKI_PAGES:
+            writeFile(MEDIAWIKI_PAGE_DIR, pageFileName + '.txt', text or '', shouldPrint=False)
 
         text = escapeTroublesomeCharacters(text)
         try:
