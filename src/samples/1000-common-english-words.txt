@@ -239,7 +239,7 @@ draw
 left
 late
 run
-don’t
+don't
 while
 press
 close
@@ -749,7 +749,7 @@ natural
 view
 sense
 capital
-won’t
+won't
 chair
 danger
 fruit

@@ -1,9 +1,13 @@
+# https://simple.wiktionary.org/wiki/Template:IPA
+# https://simple.wiktionary.org/wiki/Template:Audio-IPA
+
+import pprint
 import re
 from bs4 import BeautifulSoup, NavigableString
 
 
 def doesTextSmellLikeValidPronunciation(text):
-    return re.search(r'==(English|Translingual)==[\s\S]*\{\{IPA(?!char)', text) is not None
+    return re.search(r'==(English|Translingual)==[\s\S]*\{\{(audio-)?IPA(?!char)', text, re.IGNORECASE) is not None
 
 def getIpasFromWikiHtml(html):
     if len(html) == 0: return []
@@ -26,7 +30,7 @@ def getIpasFromWikiHtml(html):
 
 def parseIpasFromElement(el):
     ipaData = []
-    for ipaElement in el.find_all(string=re.compile(r'\{\{IPA')):
+    for ipaElement in el.find_all(string=re.compile(r'\{\{(audio-)?IPA', re.IGNORECASE)):
         ipaLine = ipaElement.text.replace('\n', '')
         ipas = getIpas(ipaLine)
         if not ipas: continue
@@ -35,13 +39,21 @@ def parseIpasFromElement(el):
     return ipaData
 
 def getAccents(ipaLine):
-    accentResult = re.search(r'\{\{a\|(.+?)\}\}', ipaLine)
+    accentResult = re.search(r'\{\{a\|(.+?)\}\}', ipaLine, re.IGNORECASE)
     if accentResult: return accentResult.groups()[0].split('|')
     return None
 
 def getIpas(ipaLine):
-    ipasResult = re.search(r'\{\{IPA(-lite)?(?!char)\|(en|mul)\|(.+?)\}\}', ipaLine)
+    ipasResult = re.search(r'\{\{(audio-)?IPA(-lite)?(?!char)\|(en|mul)\|(.+?)\}\}', ipaLine, re.IGNORECASE)
     if not ipasResult: return None
-    ipaText = ipasResult.groups()[2]
+    groups = ipasResult.groups()
+    ipasGroupIndex = 3
+    ipaText = groups[ipasGroupIndex]
     ipas = ipaText.split('|')
+
+    # handle special case for audio-API template
+    audioIpaGroupIndex = 0
+    if groups[audioIpaGroupIndex] == 'audio-':
+        audioIpaValidIpaIndex = 1
+        return [ipas[audioIpaValidIpaIndex]]
     return ipas

@@ -1,9 +1,15 @@
 ## Instructions
 
 - Download latest English wiktionary dump, latest revisions only
+- - Go to [this page](https://dumps.wikimedia.org/backup-index.html), search for "enwiktionary", click on that
+- - Search for "All pages, current versions only" and download that one
 - Extract using bzip2
 - Specify `DUMP_PATH` to extracted file
 - Set other controls as desired. It's not recommended to write pages out when you're processing a lot of them.
+
+## Links
+
+- https://en.wikipedia.org/wiki/International_Phonetic_Alphabet
 
 
 ## TODO
