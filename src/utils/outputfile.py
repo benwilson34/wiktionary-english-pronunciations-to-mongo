@@ -12,7 +12,7 @@ def initDir(dir, shouldDeleteIfExisting = True):
             shutil.rmtree(dirPath)
         except FileNotFoundError: pass
     try:
-        os.mkdir(dirPath)
+        os.makedirs(dirPath)
     except FileExistsError: pass
 
 def slugify(value, allow_unicode=False):

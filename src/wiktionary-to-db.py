@@ -1,57 +1,41 @@
 import traceback
 import mwxml
 import pprint
-import re
-from mediawiki import *
 
 from utils.db import deleteAllWordData, insertWordData
 from utils.outputfile import initDir, slugify, writeFile, writeFileFromList
 from utils.timer import startTimer, stopTimer
-from wiktionaryToDb.wiktionaryparser import doesTextSmellLikeValidPronunciation, getIpasFromWikiHtml
+from utils.mediawikiparser import doesTextSmellLikeValidPronunciation, getPronunsFromMediaWikiText
 
+REPORT_DIR = 'report'
+MEDIAWIKI_PAGE_DIR = 'mediawiki'
+FAILED_PAGE_DIR = 'failed-pages'
+
+# ----- configuration -----
+DUMP_XML_PATH = 'C:\\Users\\ben\\Downloads\\enwiktionary-20221020-pages-meta-current.xml' # required
+NUM_PAGES_TO_SKIP = 0
+NUM_PAGES_TO_PARSE = 1000
+TARGET_WORDS = []
+SHOULD_CLEAR_REPORT_FILES = False
+SHOULD_CLEAR_MEDIAWIKI_PAGES = True
+SHOULD_WRITE_MEDIAWIKI_PAGES = False
+SHOULD_CLEAR_FAILED_PAGES = True
+SHOULD_CLEAR_WORDS_IN_DB = False
+SHOULD_INSERT_WORDS_TO_DB = False
+# ----- end configuration -----
+# TODO load configuration from file instead?
 
 def main():
-    # ----- controls -----
-    DUMP_PATH = "C:\\Users\\ben\\Downloads\\enwiktionary-20220701-pages-meta-current.xml"
-    OUT_SUBDIR = 'wiktionary-to-db'
-    REPORT_DIR = f'{OUT_SUBDIR}/report'
-    SHOULD_CLEAR_REPORT_FILES = True
-    MEDIAWIKI_PAGE_DIR = f'{OUT_SUBDIR}/mediawiki'
-    SHOULD_CLEAR_MEDIAWIKI_PAGES = True
-    SHOULD_WRITE_MEDIAWIKI_PAGES = True
-    NONSMELL_PAGE_DIR = f'{OUT_SUBDIR}/non-smell-pages'
-    SHOULD_CLEAR_NONSMELL_PAGES = True
-    SHOULD_WRITE_NONSMELL_PAGES = True #
-    HTML_PAGE_DIR = f'{OUT_SUBDIR}/html'
-    SHOULD_CLEAR_HTML_PAGES = True
-    SHOULD_WRITE_HTML_PAGES = True #
-    FAILED_PAGE_DIR = f'{OUT_SUBDIR}/failed-pages'
-    SHOULD_CLEAR_FAILED_PAGES = True
-    SHOULD_CLEAR_WORDS_IN_DB = False #
-    SHOULD_INSERT_WORDS_TO_DB = False #
-    # NUM_PAGES_TO_SKIP = 403071
-    NUM_PAGES_TO_SKIP = 500
-    # NUM_PAGES_TO_PARSE = 10000000
-    NUM_PAGES_TO_PARSE = 1000
-    TARGET_WORDS = []
-    # TARGET_WORDS = ['said', 'evening', 'shop']
-    # ----- end controls -----
-
     startTimer()
 
-    initDir(OUT_SUBDIR, shouldDeleteIfExisting=False)
     if SHOULD_CLEAR_REPORT_FILES:
         initDir(REPORT_DIR)
     if SHOULD_CLEAR_MEDIAWIKI_PAGES:
         initDir(MEDIAWIKI_PAGE_DIR)
-    if SHOULD_CLEAR_NONSMELL_PAGES:
-        initDir(NONSMELL_PAGE_DIR)
-    if SHOULD_CLEAR_HTML_PAGES:
-        initDir(HTML_PAGE_DIR)
     if SHOULD_CLEAR_FAILED_PAGES:
         initDir(FAILED_PAGE_DIR)
 
-    wikiDump = mwxml.Dump.from_file(open(DUMP_PATH, encoding='utf-8'))
+    wikiDump = mwxml.Dump.from_file(open(DUMP_XML_PATH, encoding='utf-8'))
 
     processedWords = []
     skippedPages = []
@@ -76,26 +60,18 @@ def main():
 
         if not text or len(text) == 0 or not doesTextSmellLikeValidPronunciation(text):
             pagesWithNoPronunSmell.append(pageFileName)
-            if SHOULD_WRITE_NONSMELL_PAGES:
-                writeFile(NONSMELL_PAGE_DIR, pageFileName + '.txt', text or '', shouldPrint=False)
             continue
 
         if SHOULD_WRITE_MEDIAWIKI_PAGES:
             writeFile(MEDIAWIKI_PAGE_DIR, pageFileName + '.txt', text or '', shouldPrint=False)
 
-        text = escapeTroublesomeCharacters(text)
         try:
-            html = wiki2html(text, False)
-            if SHOULD_WRITE_HTML_PAGES:
-                writeFile(HTML_PAGE_DIR, pageFileName + '.html', html, shouldPrint=False)
-            pageIpas = getIpasFromWikiHtml(html)
-            if len(pageIpas) == 0:
+            pagePronuns = getPronunsFromMediaWikiText(text)
+            if len(pagePronuns) == 0:
                 pagesWithNoValidEnglishPronuns.append(pageFileName)
                 continue
-            # TODO having multiple English sections could throw a wrench into the works here.
-            # for now, I'm going to assume that all the pageIpas are for the same word (same meaning)
-            pageWords = [Word(ipa, pageIndex, page.id, page.title) for ipa in pageIpas]
-            print(f'{pageIndex:08d} {page.title}: {len(pageIpas)} IPAs')
+            pageWords = [Word(ipa, pageIndex, page.id, page.title) for ipa in pagePronuns]
+            print(f'{len(pagePronuns)} pronun(s): {pageIndex:08d} {page.title}')
             processedWords.extend(pageWords)
             pagesWithPronuns += 1
         except Exception:
@@ -124,12 +100,6 @@ def main():
     timerReport = stopTimer()
     print(timerReport)
 
-def escapeTroublesomeCharacters(text):
-    text = re.sub(r'<', '&lt;', text)
-    text = re.sub(r'\{\{multiple images[\s\S]*?\}\}', '', text)
-    return text
-    # return re.sub(r'(<nowiki\s*?\/?\s*>|<)', '', text)
-
 def Word(ipa, pageIndex, pageId, pageTitle):
     return { 'pageTitle': pageTitle, 'pageIndex': pageIndex, 'pageId': pageId, 'title':  pageTitle.lower(), **ipa }
 
@@ -137,8 +107,8 @@ def getPageFileName(index, pageId, pageTitle):
     return f'{index:09d}_{pageId}_{slugify(pageTitle, True)}'
 
 def formatWordDataLine(word):
-    pageIndex, pageId, pageTitle, title, ipaLine, accents, ipas = [word[k] for k in ('pageIndex', 'pageId', 'pageTitle', 'title', 'ipaLine', 'accents', 'ipas')]
-    return f'i {pageIndex} (id {pageId}):  {pageTitle} ({title}):  {pprint.pformat(accents)}:  {pprint.pformat(ipas)}:    {ipaLine}'
+    pageIndex, pageId, pageTitle, title, pronunLine, accents, ipas = [word[k] for k in ('pageIndex', 'pageId', 'pageTitle', 'title', 'pronunLine', 'accents', 'ipas')]
+    return f'i {pageIndex} (id {pageId}):  {pageTitle} ({title}):  {pprint.pformat(accents)}:  {pprint.pformat(ipas)}:    {pronunLine}'
 
 
 main()
