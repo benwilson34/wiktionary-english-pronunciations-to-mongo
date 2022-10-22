@@ -12,16 +12,16 @@ MEDIAWIKI_PAGE_DIR = 'mediawiki'
 FAILED_PAGE_DIR = 'failed-pages'
 
 # ----- configuration -----
-DUMP_XML_PATH = 'C:\\Users\\ben\\Downloads\\enwiktionary-20221020-pages-meta-current.xml' # required
+DUMP_XML_PATH = 'C:\\full\\path\\to\\dump.xml' # required
 NUM_PAGES_TO_SKIP = 0
-NUM_PAGES_TO_PARSE = 1000
+NUM_PAGES_TO_PARSE = 100000000
 TARGET_WORDS = []
-SHOULD_CLEAR_REPORT_FILES = False
+SHOULD_CLEAR_REPORT_FILES = True
 SHOULD_CLEAR_MEDIAWIKI_PAGES = True
 SHOULD_WRITE_MEDIAWIKI_PAGES = False
 SHOULD_CLEAR_FAILED_PAGES = True
-SHOULD_CLEAR_WORDS_IN_DB = False
-SHOULD_INSERT_WORDS_TO_DB = False
+SHOULD_CLEAR_WORDS_IN_DB = True
+SHOULD_INSERT_WORDS_TO_DB = True
 # ----- end configuration -----
 # TODO load configuration from file instead?
 
