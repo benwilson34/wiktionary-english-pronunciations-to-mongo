@@ -16,7 +16,7 @@ It could be adapted to parse more than English sections. It could also be adapte
     - `pip install pprint`
     - `pip install pymongo`
     - `pip install more-itertools`
-- Install MongoDB locally or change the connection string in [./src/utils/db.py](./src/utils/db.py) to a remote server.
+- Install MongoDB locally or change the connection string in [src/utils/db.py](./src/utils/db.py) to a remote server.
     - MongoDB Compass is recommended for inspecting/querying the data.
 
 
@@ -32,7 +32,7 @@ It could be adapted to parse more than English sections. It could also be adapte
 
 ### Optional: dry run/count the pages in the dump
 
-The [./src/count-pages.py](./src/count-pages.py) file can be run to see how many pages are in the dump. This count can come in handy when running the main program to see its progress.
+The [src/count-pages.py](./src/count-pages.py) file can be run to see how many pages are in the dump. This count can come in handy when running the main program to see its progress.
 
 `DUMP_XML_PATH` is required and should be the full path to the extracted .xml file.
 
@@ -41,13 +41,13 @@ Run the file. The total page count will be displayed in the console when it is c
 
 ## Main program
 
-The [.wiktionary-to-db.py](.wiktionary-to-db.py) file contains the main parser program.
+The [src/wiktionary-to-db.py](./src/wiktionary-to-db.py) file contains the main parser program.
 
 There are some configuration vars near the top of the file. `DUMP_XML_PATH` is required and should be the full path to the extracted .xml file. The other vars are for debugging and are detailed in the "Debugging configuration" section below.
 
 Run the `wiktionary-to-db.py` file. On my machine as of this writing, it takes about 20 minutes to process 8.35MM wiktionary pages. Stats about the run will be printed in the console when it's done.
 
-At the end of the run, the word data will be inserted to the `enwiktionary.pronuns` MongoDB collection. Additionally, a number of report files will be generated in the `./out/report` directory. Look at those for more detailed info on what happened during the run. 
+At the end of the run, the word data will be inserted to the `enwiktionary.pronuns` MongoDB collection. Additionally, a number of report files will be generated in the `out/report` directory. Look at those for more detailed info on what happened during the run. 
 
 ### Debugging configuration
 
@@ -57,9 +57,9 @@ The other config vars are for debugging purposes. They should not be needed for 
 - `NUM_PAGES_TO_PARSE` (int) - how many pages should be parsed (not counting skipped pages). Set to a number greater than the total number of pages in the dump to parse all pages (default behavior).
 - `TARGET_WORDS` (string[]) - if defined, only pages with titles that match one of the strings in this array will be parsed.
 - `SHOULD_CLEAR_REPORT_FILES` (Boolean) - when `True`, any existing report files will be deleted on startup.
-- `SHOULD_WRITE_MEDIAWIKI_PAGES` (Boolean) - when `True`, the contents of each page will be written out to the "./out/mediawiki" directory.
-- `SHOULD_CLEAR_MEDIAWIKI_PAGES` (Boolean) - when `True`, any existing mediawiki pages in "./out/mediawiki" will be deleted on startup.
-- `SHOULD_CLEAR_FAILED_PAGES` (Boolean) - when `True`, any existing failed pages in "./out/failed-pages" will be deleted on startup.
+- `SHOULD_WRITE_MEDIAWIKI_PAGES` (Boolean) - when `True`, the contents of each page will be written out to the "out/mediawiki" directory.
+- `SHOULD_CLEAR_MEDIAWIKI_PAGES` (Boolean) - when `True`, any existing mediawiki pages in "out/mediawiki" will be deleted on startup.
+- `SHOULD_CLEAR_FAILED_PAGES` (Boolean) - when `True`, any existing failed pages in "out/failed-pages" will be deleted on startup.
 - `SHOULD_CLEAR_WORDS_IN_DB` (Boolean) - when `True`, all documents in the target database/collection will be deleted immediately before inserting the parsed data.
 - `SHOULD_INSERT_WORDS_TO_DB` (Boolean) - when `True`, parsed data will be inserted to the target database/collection.
 
@@ -102,7 +102,7 @@ I take no responsibility for the words defined on wiktionary or included in the 
 
 ## Performance
 
-Once the `enwiktionary.pronuns` collection has been populated with data, an index on the `title` field should be created to *greatly* improve lookup times. TODO this index could be created automatically in the `./util/db.py` file.
+Once the `enwiktionary.pronuns` collection has been populated with data, an index on the `title` field should be created to *greatly* improve lookup times. TODO this index could be created automatically in the `src/util/db.py` file.
 
 
 ## Support/Maintenance
