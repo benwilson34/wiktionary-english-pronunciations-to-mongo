@@ -7,10 +7,6 @@ from utils.outputfile import initDir, slugify, writeFile, writeFileFromList
 from utils.timer import startTimer, stopTimer
 from utils.mediawikiparser import doesTextSmellLikeValidPronunciation, getPronunsFromMediaWikiText
 
-REPORT_DIR = 'report'
-MEDIAWIKI_PAGE_DIR = 'mediawiki'
-FAILED_PAGE_DIR = 'failed-pages'
-
 # ----- configuration -----
 DUMP_XML_PATH = 'C:\\full\\path\\to\\dump.xml' # required
 NUM_PAGES_TO_SKIP = 0
@@ -24,6 +20,10 @@ SHOULD_CLEAR_WORDS_IN_DB = True
 SHOULD_INSERT_WORDS_TO_DB = True
 # ----- end configuration -----
 # TODO load configuration from file instead?
+
+REPORT_DIR = 'report'
+MEDIAWIKI_PAGE_DIR = 'mediawiki'
+FAILED_PAGE_DIR = 'failed-pages'
 
 def main():
     startTimer()
